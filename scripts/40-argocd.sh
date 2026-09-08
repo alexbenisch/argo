@@ -16,7 +16,11 @@ $K cluster-info >/dev/null 2>&1 || die "context '$KUBE_CONTEXT' can't reach the 
 # --- 1. Argo CD ---
 log "Installing Argo CD"
 $K create namespace argocd --dry-run=client -o yaml | $K apply -f -
-$K apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+# --server-side is REQUIRED: the applicationsets CRD is larger than the 256KB
+# limit on the last-applied-configuration annotation that client-side apply
+# writes, so a plain `kubectl apply` fails with "metadata.annotations: Too long".
+$K apply --server-side --force-conflicts \
+  -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
 # --- 2. Run argocd-server in insecure mode ---
 # Argo CD terminates TLS itself by default; behind ingress-nginx that causes an
