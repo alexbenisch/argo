@@ -1,0 +1,16 @@
+# Adapted from upstream:
+# - `bases:` is deprecated -> use `resources:` instead.
+# - `patches: [- replicas.yaml]` is invalid syntax for the newer kustomize
+#   patches API -> each entry needs `path:`.
+# - Added ingress.yaml (new, not in upstream) so this overlay declares its
+#   own host/TLS instead of relying on unreachable NodePort + minikube.
+resources:
+- ../../base
+- ingress.yaml
+
+patches:
+- path: replicas.yaml
+
+configMapGenerator:
+- name: mykustom-map
+  env: config.properties

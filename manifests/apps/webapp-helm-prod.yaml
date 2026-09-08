@@ -1,0 +1,26 @@
+# Example workload (sync-wave 3): helm webapp chart, prod values.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: webapp-helm-prod
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/alexbenisch/argo.git
+    targetRevision: main
+    path: examples/helm-webapp
+    helm:
+      valueFiles:
+        - values-prod.yaml
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: prod
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

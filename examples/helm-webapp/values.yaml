@@ -1,0 +1,24 @@
+# Adapted from upstream:
+# - Added `replicas: 1` as a safe default. Upstream values.yaml never defined
+#   it, so `{{ .Values.replicas }}` rendered a bare (null) `replicas:` when
+#   this chart was templated without an environment values file.
+# - Added `ingress:` block (new, not in upstream) so templates/ingress.yaml
+#   has a default host/secret when no -f values file is given.
+appName: myhelmapp
+
+port: 80
+
+replicas: 1
+
+configmap:
+  name: myhelmapp-configmap-v1
+  data:
+    CUSTOM_HEADER: 'This app was deployed with helm!'
+
+image:
+  name: devopsjourney1/mywebapp
+  tag: latest
+
+ingress:
+  host: helm.kubetest.uk
+  tlsSecret: helm-tls

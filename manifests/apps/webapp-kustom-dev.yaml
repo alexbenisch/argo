@@ -1,0 +1,23 @@
+# Example workload (sync-wave 3): kustomize webapp, dev overlay.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: webapp-kustom-dev
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/alexbenisch/argo.git
+    targetRevision: main
+    path: examples/kustom-webapp/overlays/dev
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dev
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

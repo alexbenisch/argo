@@ -1,0 +1,19 @@
+# Adapted from upstream: type changed NodePort -> ClusterIP. The tutorial
+# used NodePort with `minikube service`, but this cluster is a remote VM
+# whose firewall only allows 22/80/443/6443 — NodePort is unreachable.
+# Ingress (templates/ingress.yaml, added) fronts this ClusterIP service instead.
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Values.appName }}
+  labels:
+    app: {{ .Values.appName }}
+spec:
+  ports:
+  - port: 80
+    protocol: TCP
+    name: flask
+  selector:
+    app: {{ .Values.appName }}
+    tier: frontend
+  type: ClusterIP

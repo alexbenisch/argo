@@ -1,0 +1,26 @@
+# New (not in upstream): Ingress for this overlay, added instead of relying
+# on the unreachable NodePort service. Kept per-overlay (not in base) so dev
+# and prod each declare their own host/TLS secret.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: mywebapp
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: nginx
+  tls:
+  - hosts:
+    - kustom-prod.kubetest.uk
+    secretName: kustom-prod-tls
+  rules:
+  - host: kustom-prod.kubetest.uk
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: kustom-mywebapp-v1
+            port:
+              number: 80

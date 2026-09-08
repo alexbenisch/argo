@@ -1,0 +1,22 @@
+# Adapted from upstream:
+# - `commonLabels` is deprecated -> migrated to `labels:`. Plain `labels:`
+#   does NOT inject into spec.selector the way commonLabels did, and
+#   deployment.yaml/service.yaml have no selector of their own, so
+#   `includeSelectors: true` is required to keep that behavior.
+resources:
+- deployment.yaml
+- service.yaml
+
+labels:
+  - pairs:
+      app: kustomwebapp
+    includeSelectors: true
+
+commonAnnotations:
+  app: mykustom-annontations
+
+namePrefix:
+  kustom-
+
+nameSuffix:
+  -v1
