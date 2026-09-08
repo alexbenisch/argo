@@ -1,0 +1,13 @@
+# ClusterIP Service fronting the demo Deployment's pods.
+apiVersion: v1
+kind: Service
+metadata:
+  name: demo
+  labels:
+    app: demo
+spec:
+  selector:
+    app: demo
+  ports:
+    - port: 80
+      targetPort: 80

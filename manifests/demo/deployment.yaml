@@ -1,0 +1,27 @@
+# Trivial demo workload with no purpose other than watching Argo CD's GitOps
+# loop in action.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: demo
+  labels:
+    app: demo
+spec:
+  replicas: 2 # <- Edit this number and git push, then watch Argo CD self-heal/reconcile.
+  selector:
+    matchLabels:
+      app: demo
+  template:
+    metadata:
+      labels:
+        app: demo
+    spec:
+      containers:
+        - name: demo
+          image: nginx:1.27-alpine
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi

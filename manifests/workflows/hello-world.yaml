@@ -1,0 +1,21 @@
+# NOT synced by Argo CD — Workflows are ephemeral runs, not declarative state,
+# so this manifest is meant to be submitted by hand:
+#
+#   kubectl create -n argo -f manifests/workflows/hello-world.yaml
+#
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: hello-world-
+  namespace: argo
+spec:
+  serviceAccountName: argo-workflow
+  entrypoint: main
+  templates:
+    - name: main
+      container:
+        image: busybox
+        command:
+          - echo
+        args:
+          - "Hello from Argo Workflows!"

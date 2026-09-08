@@ -1,0 +1,26 @@
+# Root "app of apps" Argo CD Application. Apply this once by hand
+# (kubectl apply -f manifests/root-app.yaml) and it takes over managing
+# everything else in manifests/apps/ via GitOps from here on.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+  finalizers:
+    # Ensures child Applications/resources are cleaned up if 'root' is deleted.
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/alexbenisch/argo.git
+    targetRevision: main
+    path: manifests/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

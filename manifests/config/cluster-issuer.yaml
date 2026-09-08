@@ -1,0 +1,44 @@
+# cert-manager ClusterIssuers for kubetest.uk, both using DNS-01 against
+# Cloudflare (works even though the ingresses aren't reachable from Cloudflare
+# during solving, and doesn't need a public HTTP-01 callback path).
+#
+# The Cloudflare API token is a pre-existing Secret 'cloudflare-api-token' in
+# the cert-manager namespace (created imperatively — never put the token
+# value in a file in this repo).
+#
+# Use 'letsencrypt-staging' while iterating to avoid Let's Encrypt's
+# production rate limits, then switch Ingress annotations to 'letsencrypt'
+# once things work.
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: alexander.benisch@gmail.com
+    privateKeySecretRef:
+      name: letsencrypt-account-key
+    solvers:
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-token
+              key: api-token
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-staging
+spec:
+  acme:
+    server: https://acme-staging-v02.api.letsencrypt.org/directory
+    email: alexander.benisch@gmail.com
+    privateKeySecretRef:
+      name: letsencrypt-staging-account-key
+    solvers:
+      - dns01:
+          cloudflare:
+            apiTokenSecretRef:
+              name: cloudflare-api-token
+              key: api-token

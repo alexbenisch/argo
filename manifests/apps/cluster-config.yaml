@@ -1,0 +1,26 @@
+# Plain-manifest cluster config: ClusterIssuers and ingresses for the two UIs
+# (sync-wave 1, after cert-manager/argo-workflows CRDs+services exist).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cluster-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/alexbenisch/argo.git
+    targetRevision: main
+    path: manifests/config
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

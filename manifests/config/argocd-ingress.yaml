@@ -1,0 +1,34 @@
+# Ingress exposing the Argo CD UI/API at https://argo.kubetest.uk.
+#
+# argocd-server serves TLS itself by default; putting nginx (also terminating
+# TLS) in front of that causes a redirect loop. scripts/40-argocd.sh patches
+# the argocd-cmd-params-cm ConfigMap with server.insecure=true and restarts
+# argocd-server so it speaks plain HTTP internally, which is why
+# backend-protocol is "HTTP" here even though the public-facing side is HTTPS
+# via cert-manager. force-ssl-redirect covers the plain-HTTP :80 hits.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argocd
+  namespace: argocd
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTP"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - argo.kubetest.uk
+      secretName: argocd-server-tls
+  rules:
+    - host: argo.kubetest.uk
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argocd-server
+                port:
+                  number: 80

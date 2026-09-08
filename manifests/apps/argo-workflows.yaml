@@ -1,0 +1,40 @@
+# Argo Workflows controller + server (sync-wave 0).
+#
+# Helm values (chart 2.0.4, verified against its values.yaml):
+#   - server.secure: false        -> server speaks plain HTTP (this is actually
+#     the chart default already; set explicitly so the insecure-behind-ingress
+#     intent is obvious to a reader).
+#   - server.authModes: [server]  -> UI/API usable without per-user SSO/client
+#     tokens, suitable for this single-user playground behind the ingress.
+#   - server.extraArgs: [--auth-mode=server] -> belt-and-braces alongside
+#     authModes, per the setup notes for this repo.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argo-workflows
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://argoproj.github.io/argo-helm
+    chart: argo-workflows
+    targetRevision: 2.0.4
+    helm:
+      valuesObject:
+        server:
+          secure: false
+          authModes:
+            - server
+          extraArgs:
+            - --auth-mode=server
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

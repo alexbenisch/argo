@@ -1,0 +1,25 @@
+# Trivial demo workload (sync-wave 2), used to watch GitOps reconcile.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: demo-app
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/alexbenisch/argo.git
+    targetRevision: main
+    path: manifests/demo
+    directory:
+      recurse: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

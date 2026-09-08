@@ -1,0 +1,28 @@
+# Ingress exposing the Argo Workflows UI/API at https://argo-wf.kubetest.uk.
+# The argo-workflows-server runs in insecure/HTTP mode (see
+# manifests/apps/argo-workflows.yaml), which matches nginx's default
+# backend-protocol of HTTP, so no extra protocol annotation is needed here.
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: argo-workflows
+  namespace: argo
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - argo-wf.kubetest.uk
+      secretName: argo-wf-tls
+  rules:
+    - host: argo-wf.kubetest.uk
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: argo-workflows-server
+                port:
+                  number: 2746
