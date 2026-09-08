@@ -1,11 +1,11 @@
 # Adapted from upstream: added `ingress:` block (new, not in upstream) for
 # this environment's host/TLS secret.
 
-replicas: 4
+replicas: 6
 
 configmap:
   data:
-    CUSTOM_HEADER: 'This is on the PROD environment!'
+    CUSTOM_HEADER: "This is on the PROD environment!"
 
 ingress:
   host: helm-prod.kubetest.uk
