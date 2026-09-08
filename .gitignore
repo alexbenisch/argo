@@ -1,0 +1,17 @@
+# Secrets — NEVER commit. This repo is public.
+.env
+.env.*
+!.env.example
+
+# Kubeconfigs and client certs pulled off the VM
+kubeconfig
+kubeconfig.*
+*.pem
+*.key
+*.crt
+secrets/
+
+# Local scratch
+.DS_Store
+*.log
+*.tmp
