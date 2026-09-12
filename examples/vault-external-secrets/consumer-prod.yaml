@@ -1,0 +1,36 @@
+# prod counterpart of consumer-dev.yaml — same shape, different namespace and
+# different Vault value. See consumer-dev.yaml for the commentary.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-consumer
+  namespace: prod
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-consumer
+  template:
+    metadata:
+      labels:
+        app: api-consumer
+    spec:
+      containers:
+        - name: api-consumer
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - 'echo "prod API_KEY present, ${#API_KEY} chars"; sleep infinity'
+          env:
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  name: prod-api-credentials
+                  key: api-key
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 32Mi

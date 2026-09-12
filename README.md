@@ -12,7 +12,8 @@ A disposable Hetzner VM running minikube, used as a playground for learning
 Argo CD and Argo Workflows. Everything past the initial bootstrap is managed
 declaratively via an app-of-apps GitOps pattern: Argo CD watches this public
 repo and reconciles cert-manager, Argo Workflows, cluster config (ClusterIssuers,
-Ingresses), and a trivial demo app from it.
+Ingresses), Vault + the External Secrets Operator, and a handful of example
+workloads from it.
 
 The whole point is that it's cheap to blow away and recreate — see "Cost"
 below.
@@ -46,6 +47,11 @@ Run in order:
 5. `scripts/40-argocd.sh` — installs Argo CD, seeds the Cloudflare token
    secret, and applies the app-of-apps root `Application` — from here on the
    cluster is managed by Argo CD from this repo.
+6. `scripts/60-vault-seed.sh` — once Argo CD has synced the `vault` and
+   `external-secrets` apps: enables the `org/kv` mount in the (dev-mode,
+   in-memory) Vault, writes the demo API keys, and creates the token Secret the
+   `ClusterSecretStore` authenticates with. Re-run it after any `vault-0`
+   restart. See [`examples/vault-external-secrets/`](examples/vault-external-secrets/README.md).
 
 ## URLs
 
@@ -90,6 +96,10 @@ all back.
   kubectl create -n argo -f manifests/workflows/hello-world.yaml
   ```
   then watch it run at https://argo-wf.kubetest.uk.
+- Rotate a secret in Vault (re-run `scripts/60-vault-seed.sh`) and watch
+  External Secrets propagate the new value into the `dev` and `prod` namespaces
+  within a minute — no commit, no sync, no secret in git. More exercises in
+  [`examples/vault-external-secrets/README.md`](examples/vault-external-secrets/README.md).
 
 ## Repo layout
 
@@ -101,12 +111,17 @@ all back.
 │   ├── config/              # ClusterIssuers, ingresses for the two UIs
 │   ├── demo/                # trivial nginx Deployment + Service
 │   └── workflows/           # example Workflow, submitted manually
+├── examples/                # vendored tutorial repos, adapted (see its README)
+│   ├── kustom-webapp/       # Kustomize base + dev/prod overlays
+│   ├── helm-webapp/         # the same app as a Helm chart
+│   └── vault-external-secrets/  # ClusterSecretStore + ExternalSecrets + consumers
 ├── scripts/
 │   ├── 00-provision.sh      # ssh key, firewall, VM
 │   ├── 10-dns.sh            # Cloudflare A records
 │   ├── 20-bootstrap-host.sh # docker/kubectl/helm/minikube on the VM
 │   ├── 30-kubeconfig.sh     # merge a local kubectl context
 │   ├── 40-argocd.sh         # install Argo CD, hand off to GitOps
+│   ├── 60-vault-seed.sh     # seed the dev Vault + its token Secret
 │   ├── update-firewall.sh   # re-point firewall rules at your current IP
 │   ├── 99-teardown.sh       # destroy everything
 │   ├── lib.sh               # shared config + helpers

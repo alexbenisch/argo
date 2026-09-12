@@ -1,0 +1,49 @@
+# Proof that the Vault value actually lands in a pod. Upstream this was a bare
+# Pod; a Deployment is used here because Argo CD manages it (a bare Pod can't be
+# updated in place, and reports Degraded once it exits).
+#
+# The container prints only the length of the value, not the value itself —
+# secrets in pod logs are a bad habit even when the secret is fake. To see the
+# real value, see the "Verifying" section of this directory's README.
+#
+# Note: an env var is read once at container start, so a rotation in Vault will
+# NOT reach a running pod. That is a property of secretKeyRef-as-env, not of
+# External Secrets — restart the Deployment (or mount the Secret as a volume) to
+# pick up a new value. Try it; it's the most useful lesson in this example.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-consumer
+  namespace: dev
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: api-consumer
+  template:
+    metadata:
+      labels:
+        app: api-consumer
+    spec:
+      containers:
+        - name: api-consumer
+          image: busybox:1.37
+          command:
+            - sh
+            - -c
+            - 'echo "dev API_KEY present, ${#API_KEY} chars"; sleep infinity'
+          env:
+            - name: API_KEY
+              valueFrom:
+                secretKeyRef:
+                  # Created by the ExternalSecret, not by Argo CD. Until Vault
+                  # is seeded this pod sits in CreateContainerConfigError — that
+                  # is the expected pre-seed state, not a bug.
+                  name: dev-api-credentials
+                  key: api-key
+          resources:
+            requests:
+              cpu: 10m
+              memory: 16Mi
+            limits:
+              memory: 32Mi

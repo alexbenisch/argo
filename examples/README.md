@@ -1,5 +1,16 @@
 # Examples
 
+Vendored tutorial repos, adapted to run on this playground. Each subdirectory has its own
+README covering what changed and why.
+
+- `kustom-webapp/` + `helm-webapp/` — Kustomize vs. Helm, from `devopsjourney1/argo-examples`
+  (documented below).
+- `vault-external-secrets/` — Vault + the External Secrets Operator, from
+  `rslim087a/vault-kubernetes-external-secrets-tutorial`. See
+  [`vault-external-secrets/README.md`](vault-external-secrets/README.md).
+
+## Kustomize vs. Helm webapp
+
 Two variants of the same trivial webapp (`devopsjourney1/mywebapp:latest`, listens on
 container port 80), adapted from the `devopsjourney1/argo-examples` tutorial repo, showing
 Argo CD deploying a Kustomize-managed app and a Helm-managed app side by side.
@@ -16,7 +27,7 @@ Each is deployed twice (dev and prod namespaces) via the four Application manife
 - `webapp-helm-dev.yaml` -> https://helm-dev.kubetest.uk
 - `webapp-helm-prod.yaml` -> https://helm-prod.kubetest.uk
 
-## What was fixed vs. upstream
+### What was fixed vs. upstream
 
 The upstream tutorial examples don't render as-is with current kustomize/helm and don't fit
 this cluster. Fixes applied (see the top-of-file comment on each changed file for detail):
@@ -38,7 +49,7 @@ this cluster. Fixes applied (see the top-of-file comment on each changed file fo
    without an environment values file. Added `replicas: 1` as a safe default.
    `values-dev.yaml` (5) and `values-prod.yaml` (4) were left as they were.
 
-## Adaptations for this cluster
+### Adaptations for this cluster
 
 - **Service type NodePort -> ClusterIP** in both examples. The tutorial used NodePort with
   `minikube service`, but this minikube runs on a remote VM whose firewall only allows
@@ -53,7 +64,7 @@ this cluster. Fixes applied (see the top-of-file comment on each changed file fo
     `cert-manager.io/cluster-issuer: letsencrypt` (the ClusterIssuer already exists in this
     cluster).
 
-## Verifying locally
+### Verifying locally
 
 ```
 kubectl kustomize examples/kustom-webapp/overlays/dev/

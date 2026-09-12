@@ -1,0 +1,52 @@
+# HashiCorp Vault in DEV mode (sync-wave 0) — the secret backend that External
+# Secrets reads from.
+#
+# The upstream tutorial ran Vault via docker-compose on the developer's laptop
+# and pointed the store at http://host.docker.internal:8200. That can't work
+# here: minikube runs on a remote Hetzner VM whose firewall only allows
+# 22/80/443/6443, so the cluster cannot reach a Vault on your workstation.
+# Vault therefore runs in-cluster and is addressed at
+# http://vault.vault.svc.cluster.local:8200.
+#
+# DEV MODE means: unsealed automatically, in-memory storage (everything is lost
+# on pod restart), plain HTTP, and a fixed root token ("root"). That is fine and
+# intentional for a throwaway playground — do not copy this into anything real.
+# Re-run scripts/60-vault-seed.sh after any Vault pod restart to re-seed the KV
+# data.
+#
+# The release name must stay "vault" (Argo CD derives it from the Application
+# name) — the chart names the Service after the release, and the store below
+# hardcodes vault.vault.svc.cluster.local.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: vault
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: default
+  source:
+    repoURL: https://helm.releases.hashicorp.com
+    chart: vault
+    targetRevision: 0.34.1
+    helm:
+      valuesObject:
+        server:
+          dev:
+            enabled: true
+            devRootToken: root
+        injector:
+          # The Vault Agent sidecar injector is a *different* way of getting
+          # secrets into pods. This example uses External Secrets instead, so
+          # skip it and save the memory.
+          enabled: false
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: vault
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
